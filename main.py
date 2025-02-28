@@ -1,14 +1,20 @@
+from fastapi import FastAPI
 import requests
 
-API_KEY = "AIzaSyBAitoYGdwYIymiWgfzRu-oNocH6afah58"
-SEARCH_QUERY = "Shape of You Ed Sheeran"
-URL = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={SEARCH_QUERY}&type=video&key={API_KEY}"
+app = FastAPI()  # This MUST be present
 
-response = requests.get(URL)
-data = response.json()
+API_KEY = "AIzaSyBAitoYGdwYIymiWgfzRu-oNocH6afah58"  # Replace with your actual YouTube API key
 
-# Extract the first video ID
-video_id = data["items"][0]["id"]["videoId"]
-video_link = f"https://www.youtube.com/watch?v={video_id}"
+@app.get("/search")
+def search_video(query: str):
+    url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={query}&type=video&key={API_KEY}"
+    response = requests.get(url)
+    data = response.json()
 
-print("YouTube Video Link:", video_link)
+    if "items" not in data or not data["items"]:
+        return {"error": "No results found"}
+
+    video_id = data["items"][0]["id"]["videoId"]
+    video_link = f"https://www.youtube.com/watch?v={video_id}"
+    
+    return {"video_link": video_link}
